@@ -57,7 +57,7 @@ def main():
             dir = path.Path(__file__).abspath()
             sys.path.append(dir.parent.parent)
             # reference using  ./
-            with open("./pdf_docs/"+uploadedfile.name), "wb") as f:
+            with open("./pdf_docs/"+uploadedfile.name, "wb") as f:
                 f.write(uploadedfile.getbuffer())
 
     text_splitter = RecursiveCharacterTextSplitter(
