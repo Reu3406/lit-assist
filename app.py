@@ -33,8 +33,8 @@ def main():
 
     st.set_page_config(page_title="AI document intepreter")
 
-    # if "openai_key" not in st.session_state:
-    #     st.session_state.openai_key = None
+    if "openai_key" not in st.session_state:
+         st.session_state.openai_key = None
 
     st.header("Upload Your PDFs and ask me anything about them")
     user_question = st.text_input("What would you like to know from your documents?")
@@ -44,8 +44,8 @@ def main():
     with st.sidebar:
         st.subheader("Your OpenAI API key:")
         KEY = st.text_input("OpenAI API Key")
-        # if KEY:
-        #     st.session_state.openai_key = KEY
+        if KEY:
+             st.session_state.openai_key = KEY
         st.subheader("Your documents")
         pdf_docs = st.file_uploader(
             "Upload your PDFs here and click on 'Process'",
@@ -70,7 +70,7 @@ def main():
     llm = OpenAI(
         model="gpt-3.5-turbo-instruct",
         temperature=0,
-        openai_api_key=KEY,
+        openai_api_key=st.session_state.openai_key,
     )
 
     chain = load_qa_chain(
@@ -78,12 +78,12 @@ def main():
         chain_type="stuff",
     )
 
-    embeddings = OpenAIEmbeddings(model="text-embedding-ada-002", openai_api_key=KEY)
+    embeddings = OpenAIEmbeddings(model="text-embedding-ada-002", openai_api_key=st.session_state.openai_key)
 
     summary_llm = ChatOpenAI(
         model_name="gpt-3.5-turbo",
         temperature=0.3,
-        openai_api_key=KEY,
+        openai_api_key=st.session_state.openai_key,
     )
 
     def pdf_to_vectorstore(pdf):
