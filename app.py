@@ -57,7 +57,7 @@ def main():
             dir = path.Path(__file__).abspath()
             sys.path.append(dir.parent.parent)
             # reference using  ./
-            with open("./pdf_docs/"+uploadedfile.name, "wb") as f:
+            with open("./"+uploadedfile.name, "wb") as f:
                 f.write(uploadedfile.getbuffer())
 
     text_splitter = RecursiveCharacterTextSplitter(
@@ -134,7 +134,7 @@ def main():
 
     if st.button("Process"):
         with st.spinner("Processing"):
-            for pdf in [dir + f for f in os.listdir("./pdf_docs")]:
+            for pdf in [dir + f for f in os.listdir("./")]:
                 vectorstore = pdf_to_vectorstore(pdf)
                 matches = query_vectorstore_match(query, vectorstore, k=3)
                 answer_query(matches, query)
