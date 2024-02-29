@@ -142,7 +142,7 @@ def main():
         st.write(summary)
 
         st.write("Response per file:")
-        st.dataframe(file_answer_df, hide_index=True)
+        st.dataframe(file_answer_df)
         st.download_button(
             "Download csv",
             file_answer_df.to_csv(),
@@ -151,7 +151,7 @@ def main():
         )
 
         st.write("Matching portions from files:")
-        st.dataframe(file_match_chunk_df, hide_index=True)
+        st.dataframe(file_match_chunk_df)
         st.download_button(
             "Download csv",
             file_match_chunk_df.to_csv(),
