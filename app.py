@@ -56,7 +56,7 @@ file_name = []
 
 answer = []
 
-file_match_chunk_df = pd.DataFrame({"file": [], "page no.": [], "excerpt": []})
+st.session_state.file_match_chunk_df = pd.DataFrame({"file": [], "page no.": [], "excerpt": []})
 
 
 def main():
@@ -65,7 +65,7 @@ def main():
 
     answer = []
 
-    file_match_chunk_df = pd.DataFrame({"file": [], "page no.": [], "excerpt": []})
+    st.session_state.file_match_chunk_df = pd.DataFrame({"file": [], "page no.": [], "excerpt": []})
 
     st.set_page_config(page_title="AI multi-document RAG summarise")
 
@@ -121,13 +121,13 @@ def main():
                 dict = {"file": file, "page no.": page, "excerpt": content}
                 result = pd.DataFrame(dict)
 
-                file_match_chunk_df = pd.concat(
-                    [file_match_chunk_df, result], ignore_index=True
+                st.session_state.file_match_chunk_df = pd.concat(
+                    [st.session_state.file_match_chunk_df, result], ignore_index=True
                 )
 
                 answer.append(chain.run(input_documents=matches, question=query))
 
-        file_answer_df = pd.DataFrame({"file": file_name, "response": answer})
+        st.session_state.file_answer_df = pd.DataFrame({"file": file_name, "response": answer})
         text_to_summarize = "\n".join(answer)
 
         chat_messages = [
@@ -143,19 +143,19 @@ def main():
         st.write(summary)
 
         st.write("Response per file:")
-        st.dataframe(file_answer_df)
+        st.dataframe(st.session_state.file_answer_df)
         st.download_button(
             "Download csv",
-            file_answer_df.to_csv(),
+            st.session_state.file_answer_df.to_csv(),
             file_name="file_answer.csv",
             mime="text/csv",
         )
 
         st.write("Matching portions from files:")
-        st.dataframe(file_match_chunk_df)
+        st.dataframe(st.session_state.file_match_chunk_df)
         st.download_button(
             "Download csv",
-            file_match_chunk_df.to_csv(),
+            st.session_state.file_match_chunk_df.to_csv(),
             file_name="relevant_chunks.csv",
             mime="text/csv",
         )
