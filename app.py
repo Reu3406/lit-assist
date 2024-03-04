@@ -24,8 +24,8 @@ if "openai_key" not in st.session_state:
 
 text_splitter = RecursiveCharacterTextSplitter(
     separators=["\n\n", "\n", ".", " "],
-    chunk_size=300,
-    chunk_overlap=50,
+    chunk_size=1000,
+    chunk_overlap=200,
     length_function=len,
 )
 
