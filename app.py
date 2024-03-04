@@ -24,8 +24,8 @@ if "openai_key" not in st.session_state:
 
 text_splitter = RecursiveCharacterTextSplitter(
     separators=["\n\n", "\n", ".", " "],
-    chunk_size=500,
-    chunk_overlap=100,
+    chunk_size=300,
+    chunk_overlap=50,
     length_function=len,
 )
 
@@ -106,7 +106,7 @@ def main():
                     )
                 vectorstore = FAISS.from_documents(documents=docs, embedding=embeddings)
 
-                matches = vectorstore.similarity_search(query, k=3)
+                matches = vectorstore.similarity_search(query, k=5)
 
                 file = []
                 page = []
