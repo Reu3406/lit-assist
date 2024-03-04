@@ -106,7 +106,7 @@ def main():
                     )
                 vectorstore = FAISS.from_documents(documents=docs, embedding=embeddings)
 
-                matches = vectorstore.similarity_search(query, k=5)
+                matches = vectorstore.similarity_search(query, k=3)
 
                 file = []
                 page = []
