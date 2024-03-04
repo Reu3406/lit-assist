@@ -104,6 +104,7 @@ def main():
                             metadata={"page": i + 1, "source": file_name[n]},
                         )
                     )
+                    docs=text_splitter.split_documents(docs)
                 vectorstore = FAISS.from_documents(documents=docs, embedding=embeddings)
 
                 matches = vectorstore.similarity_search(query, k=3)
