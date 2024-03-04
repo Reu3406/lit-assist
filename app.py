@@ -56,7 +56,7 @@ file_name = []
 
 answer = []
 
-st.session_state.file_match_chunk_df = pd.DataFrame({"file": [], "page no.": [], "excerpt": []})
+#st.session_state.file_match_chunk_df = pd.DataFrame({"file": [], "page no.": [], "excerpt": []})
 
 
 def main():
@@ -65,9 +65,12 @@ def main():
 
     answer = []
 
-    st.session_state.file_match_chunk_df = pd.DataFrame({"file": [], "page no.": [], "excerpt": []})
-    st.session_state.file_answer_df = pd.DataFrame({"file": [], "response": []})
-    st.session_state.summary=""
+    if "file_match_chunk_df" not in st.session_state:
+        st.session_state.file_match_chunk_df = pd.DataFrame({"file": [], "page no.": [], "excerpt": []})
+    if "file_answer_df" not in st.session_state:
+        st.session_state.file_answer_df = pd.DataFrame({"file": [], "response": []})
+    if "summary" not in st.session_state:
+        st.session_state.summary=""
 
     st.set_page_config(page_title="AI multi-document RAG summarise")
 
