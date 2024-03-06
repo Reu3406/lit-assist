@@ -1,0 +1,5 @@
+known problems that need to be resolved:
+
+LLM reproduces matching chunks from previous pdf file if current pdf produces no matches or produces matches under the current specified number of chunk matches
+this results in the same response given across some articles, and thus poisoning the overall summarised answer
+Possible fix: escape loop if no matching chunks were produced, i.e skip pdf 
