@@ -1,13 +1,21 @@
-# ask single question
-# print table of pdf name and answer , download button to download table as csv
-# pass table list of answers to 2nd llm to summarise answers and print to screen
+'''
+what the python script does 
+# you direct python to a folder of pdf files
+# you ask a single question to all the pdf files
+# each pdf file is chunked into pieces and vectorised by embedding model , chunks stored into a vector database
+# your question is matched to the chunks of each pdf , through similarity search, the top few matching chunks are produced 
+# from the matching chunks of each document , the LLM summarises an answer to your question for each pdf
+# the LLM then summarises all answers for each pdf into a single final answer to your question
+# the table of pdf name and LLM's answer for each pdf, and the table of each pdf and the matching chunks of text (with page nunmber) to the question is stored and saved for reference 
+'''
 
-# in , future automate find metadata for papers and save to table for download
-# generate reference list with options for style, downloadable as text file
+'''
+if you don't have the langchain package already installed :
+pip install --upgrade langchain 
+'''
 
-
-from PyPDF2 import PdfReader
-import pypdf
+#from PyPDF2 import PdfReader  #only needed for optional alternative methods commented out below
+#import pypdf
 from langchain.document_loaders import PyPDFLoader
 
 from langchain.text_splitter import RecursiveCharacterTextSplitter
@@ -25,8 +33,12 @@ from langchain.schema import AIMessage, HumanMessage, SystemMessage
 import re
 import pandas as pd
 
+#input your OpenAI account API key 
 key = ""
 
+#defining text splitter to split text read from pdf files
+#splitter will split by special characters first , i.e by \n next line first...etc
+#then it will split by chunk size, in this case 500 character lengths , with overlap of 100 characters between chunks
 text_splitter = RecursiveCharacterTextSplitter(
     separators=["\n\n", "\n", ".", " "],
     chunk_size=500,
@@ -34,7 +46,7 @@ text_splitter = RecursiveCharacterTextSplitter(
     length_function=len,
 )
 
-
+#defining LLM that will be used to summarise answer from matching chunks of text from each pdf
 llm = OpenAI(
     model="gpt-3.5-turbo-instruct",
     temperature=0,
@@ -42,21 +54,26 @@ llm = OpenAI(
     # openai_api_key=st.session_state.openai_key,
 )
 
-
+#the command to QA(query-answer) LLM using the LLM parameters defined above
 chain = load_qa_chain(
     llm=llm,
     chain_type="stuff",
 )
 
+#defining embedding model that will be used to vectorise text to embedding vectors that can be understood by LLM
 embeddings = OpenAIEmbeddings(
     model="text-embedding-ada-002",
     openai_api_key=key,
     # openai_api_key=st.session_state.openai_key
 )
 
+#for getting path address of files
 import os
 
+#input full address of pdf folder
 dir = "C:/Users/reu34/Desktop/eczema_LLMchatbot(GAIRYv4)/pdfs/"
+
+#lists all files in the folder, and append the full address path to each file name, so pdf reader can find and read files later
 pdf_docs = [dir + f for f in os.listdir(dir)]
 
 
