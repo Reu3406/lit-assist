@@ -1,0 +1,131 @@
+from langchain.document_loaders import PyPDFLoader
+
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain.embeddings import OpenAIEmbeddings
+from langchain.vectorstores import FAISS
+
+from langchain.llms import OpenAI
+from langchain.chains.question_answering import load_qa_chain
+
+from langchain.chat_models import ChatOpenAI
+from langchain.schema import AIMessage, HumanMessage, SystemMessage
+
+import os
+import re
+import pandas as pd
+
+# input your openai key
+openai_key = ""
+
+# input full address of pdf folder
+dir = ""
+
+# input your single question for all pdf files
+query = ""
+
+
+#############################################################
+# parameters
+#########################################################
+
+# how text is split, size of each chunk and amount of overlap according to number of characters
+text_splitter = RecursiveCharacterTextSplitter(
+    separators=["\n\n", "\n", ".", " "],
+    chunk_size=500,
+    chunk_overlap=100,
+    length_function=len,
+)
+
+# embedding model used to vectorise text chunks
+embeddings = OpenAIEmbeddings(model="text-embedding-ada-002", openai_api_key=openai_key)
+
+# llm used to generate response to question using the matching chunks
+llm = OpenAI(
+    model="gpt-3.5-turbo-instruct",
+    temperature=0,
+    openai_api_key=openai_key,
+)
+
+# calling llm to generate response from matching chunks
+chain = load_qa_chain(
+    llm=llm,
+    chain_type="stuff",
+)
+
+# llm  used to summarise responses from each document into a single summarised answer
+summary_llm = ChatOpenAI(
+    model_name="gpt-3.5-turbo", temperature=0.3, openai_api_key=openai_key
+)
+
+# number of text chunks returned per document from similarity search against question
+num_chunks = 3
+
+
+#################################################################
+
+# list of all pdf files within folder, concatenating full file path address for each pdf
+pdf_docs = [dir + f for f in os.listdir(dir) if f.endswith(".pdf")]
+
+# initialise empty variables to store results
+file_name = []
+answer = []
+file_match_chunk_df = pd.DataFrame({"file": [], "page no.": [], "excerpt": []})
+
+# Loop through each pdf file
+for pdf in pdf_docs:
+    # read text from pdf and split to chunks of text
+    pdf_reader = PyPDFLoader(pdf)
+    pages = pdf_reader.load_and_split(text_splitter=text_splitter)
+
+    # convert text chunks to vectors
+    vectorstore = FAISS.from_documents(documents=pages, embedding=embeddings)
+
+    # compare question against chunks, produce x number of chunks that are similar to question
+    matches = vectorstore.similarity_search(query, k=num_chunks)
+
+    # loop through each matching chunk, append file name, page and text content to list
+    file = []
+    page = []
+    content = []
+
+    for match in matches:
+        file.append(re.sub(r".*/", "", match.metadata["source"]))
+        page.append(match.metadata["page"] + 1)
+        content.append(match.page_content)
+
+    # combine the lists into a dataframe and append to main dataframe
+    dict = {"file": file, "page no.": page, "excerpt": content}
+
+    file_match_chunk_df = pd.concat(
+        [file_match_chunk_df, pd.DataFrame(dict)], ignore_index=True
+    )
+
+    # append file name and summarised response from matches, for later input to summarise all responsed from all pdf files
+    file_name.append(re.sub(r".*/", "", pdf_reader.file_path))
+
+    answer.append(chain.run(input_documents=matches, question=query))
+
+# combine file name and response for each pdf file into a dataframe for output
+file_answer_df = pd.DataFrame({"file": file_name, "answer": answer})
+
+
+# summarise response from each pdf document into a single summary answer
+text_to_summarize = "\n".join(answer)
+
+chat_messages = [
+    SystemMessage(
+        content=f"You are an academic research expert tasked to answer the following question: '{query}'"
+    ),
+    HumanMessage(
+        content=f"answer the question by providing a single concise summary of the following text: '{text_to_summarize}'. \n Keep the summary within 1000 words "
+    ),
+]
+
+
+summary = summary_llm(chat_messages).content
+
+print(summary)
+
+# saving files to same folder as pdfs
+file_answer_df.to_csv(f"{dir}LLMresponse_perfile.csv")
+file_match_chunk_df.to_csv(f"{dir}matching_portions_of_text.csv")
