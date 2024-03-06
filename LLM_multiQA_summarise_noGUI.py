@@ -162,6 +162,8 @@ chat_messages = [
         content=f"answer the question by providing a single concise summary of the following text: '{text_to_summarize}'. \n Keep the summary within 1000 words "
     ),
 ]
+
+
 #defining and calling LLM to summarise answers into final answer
 summary_llm = ChatOpenAI(
     model_name="gpt-3.5-turbo", temperature=0.3, openai_api_key=key
@@ -170,6 +172,11 @@ summary_llm = ChatOpenAI(
 summary = summary_llm(chat_messages).content
 
 print(summary)
+
+
+# saving csv files of matching chunks and each answer to same folder as pdfs, using f string to input the folder address same as the pdf documents
+file_answer_df.to_csv(f"{dir}LLMresponse_perfile.csv")
+file_match_chunk_df.to_csv(f"{dir}matching_portions_of_text.csv")
 
 
 
